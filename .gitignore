@@ -1,41 +1,42 @@
-# Compiled Lua sources
-luac.out
+if not game:IsLoaded() then
+    game.Loaded:wait()
+end
 
-# luarocks build files
-*.src.rock
-*.zip
-*.tar.gz
+local Players = game:GetService("Players")
 
-# Object files
-*.o
-*.os
-*.ko
-*.obj
-*.elf
+local Player = Players.LocalPlayer
+local PlayerGui = Player.PlayerGui
 
-# Precompiled Headers
-*.gch
-*.pch
+local Chat = PlayerGui:FindFirstChild("Chat") 
+local MessageDisplay = Chat and Chat:FindFirstChild("Frame_MessageLogDisplay", true)
+local Scroller = MessageDisplay and MessageDisplay:FindFirstChild("Scroller")
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-*.def
-*.exp
+local Gsub = string.gsub
+local Lower = string.lower
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+if not Scroller then return end
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+for _, x in next, Scroller:GetChildren() do
+    local MessageTextLabel = x:FindFirstChildWhichIsA("TextLabel")
+        
+    if MessageTextLabel then
+        local Message = Gsub(MessageTextLabel.Text, "^%s+", "")
+        
+        if Message:match(" ") then
+            x:Destroy()
+        end
+    end
+end
 
+local ChatAdded = Scroller.ChildAdded:Connect(function(x)
+    local MessageTextLabel = x:FindFirstChildWhichIsA("TextLabel")
+    local SenderTextButton = MessageTextLabel and MessageTextLabel:FindFirstChildWhichIsA("TextButton")
+    if MessageTextLabel and SenderTextButton then
+        repeat task.wait() until not MessageTextLabel.Text:match("__+")
+        local Message = Gsub(MessageTextLabel.Text, "^%s+", "")
+        
+        if Message:match(" ") then
+            x:Destroy()
+        end
+    end
+end)
